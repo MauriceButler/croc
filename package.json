@@ -1,0 +1,19 @@
+{
+  "name": "croc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Maurice Butler <maurice.butler@gmail.com> (http://maur.us/)",
+  "license": "MIT",
+  "bin": {
+    "croc": "./index.js"
+  },
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "puppeteer": "^1.1.0",
+    "queue-batch": "^1.0.2"
+  }
+}
