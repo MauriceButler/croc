@@ -1,7 +1,7 @@
 {
-  "name": "croc",
+  "name": "croc-of",
   "version": "1.0.0",
-  "description": "",
+  "description": "A croc of 💩 that works around issues with styled omponents renderin is production mode",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,5 +16,22 @@
     "parcel-bundler": "^1.6.2",
     "puppeteer": "^1.1.0",
     "queue-batch": "^1.0.2"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MauriceButler/croc-of.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MauriceButler/croc-of/issues"
+  },
+  "homepage": "https://github.com/MauriceButler/croc-of#readme",
+  "keywords": [
+    "styled",
+    "components",
+    "parcel",
+    "bundler",
+    "snapshot",
+    "ssr"
+  ]
 }
