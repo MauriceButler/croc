@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
-const Queue = require('queue-batch');
 const mkdirp = require('mkdirp');
-const server = require('./server');
+const Queue = require('queue-batch');
+const puppeteer = require('puppeteer');
+const Bundler = require('parcel-bundler');
 
 const distRegex = /\/dist\//g;
 const port = 3000;
@@ -38,9 +38,8 @@ const skipExternalRequests = async page => {
 };
 
 async function shutdown(browser) {
-    await browser.close();
-
     console.timeEnd('Total time');
+    await browser.close();
     process.exit(0);
 }
 
@@ -57,7 +56,7 @@ async function getAndSavePage(browser, route, callback) {
     }
 
     await page.setViewport({ width: config.viewport.width, height: config.viewport.height });
-    await page.goto(target, {waitUntil: 'networkidle2'});
+    await page.goto(target, { waitUntil: 'networkidle2' });
 
     await page.waitFor(config.waitTime);
 
@@ -69,7 +68,7 @@ async function getAndSavePage(browser, route, callback) {
 
     mkdirp.sync(outputPath);
 
-    fs.writeFile(path.join(outputPath, 'index.html'), html.replace(distRegex, '"/'), error => {
+    fs.writeFile(path.join(outputPath, 'index.html'), html.replace(distRegex, '/'), error => {
         console.timeEnd(timmingLabel);
         callback(error);
     });
@@ -77,17 +76,47 @@ async function getAndSavePage(browser, route, callback) {
 
 (async () => {
     // server.serve(config.basePath, config.port);
+    const command = {
+        outDir: config.basePath,
+        watch: false,
+        cache: false,
+        killWorkers: false,
+        hmr: false,
+        logLevel: 0,
+    };
+    console.time('Total time');
+    console.time('Total Build time');
+    console.log('Building in Dev mode');
 
-    const browser = await puppeteer.launch({ headless: false });
+    process.env.NODE_ENV = '';
+
+    const bundler = new Bundler('./public/index.html', command);
+    await bundler.serve(config.port);
+
+    const browser = await puppeteer.launch({ headless: true });
     const queue = new Queue(getAndSavePage.bind(null, browser));
 
     queue.on('error', error => {
         throw error;
     });
 
-    queue.on('empty', () => shutdown(browser));
+    queue.on('empty', () => {
+        console.timeEnd('Total Snapshot time');
 
-    console.time('Total time');
+        bundler.once('buildEnd', () => {
+            console.timeEnd('Total Rebuild time');
+            shutdown(browser);
+        });
 
-    queue.concat(config.routes);
+        console.log('Rebuilding in Prod mode');
+        console.time('Total Rebuild time');
+        process.env.NODE_ENV = 'production';
+        bundler.bundle();
+    });
+
+    bundler.once('buildEnd', () => {
+        console.timeEnd('Total Build time');
+        console.time('Total Snapshot time');
+        queue.concat(config.routes);
+    });
 })();
